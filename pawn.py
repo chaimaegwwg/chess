@@ -1,11 +1,15 @@
 from game import render,ft_boerd
 import sys
-
-#mission is make rule for the bishop  blackkkkkkkkkk
+#problem the king swap not eat 
+#the mission and the finale is to check also checkmate 
 
 #pawn pass the finale one | i will take it to the final
-# after the pawn there is the 
+#pawn on the finale can transfert to any thing he wanted
+# move make sure the black have the same move of the white to finish 
+ 
+#mission a square between the kings
 
+#the mission is the # can't move check this 
 
 class Step:
     def __init__(self, col, row,value):
@@ -111,127 +115,178 @@ def move_generale(first, second,fro_m, to, boerd):
 def must_be_white(first):
     character = first.split(":")
     character = character[1].strip()
-    if character == "P":
-        return True
-    elif character == "B":
-        return True
-    elif character == "N":
-        return True
-    elif character == "Q":
-        return True
-    elif character == "R":
-        return
-    elif character == "K":
-        return True
-    else:
-        return False
-
+    lst = ["P","B","N","Q","R","K"]
+    return character in lst
 
 def must_be_black(first):
     character = first.split(":")
     character = character[1].strip()
-    if character == "p":
-        return True
-    elif character == "b":
-        return True
-    elif character == "n":
-        return True
-    elif character == "q":
-        return True
-    elif character == "r":
-        return
-    elif character == "k":
-        return True
-    else:
+    lst = ["p","b","n","q","r","k"]
+    return character in lst
+
+
+
+
+def rule_checks(from_c, to, boerd, grid):
+    pass
+
+
+
+def rule_king(from_k, to, boerd, grid):
+    from_col ,from_row = ft_position(from_k,boerd)
+    to_col ,to_row = ft_position(to,boerd)
+    char = grid[from_col][from_row].value
+    char = char.split(":")
+    charac = from_k.split(":")
+    dx = to_row - from_row
+    dy = to_col - from_col
+
+    opponent = ['p','r','b','q','n']
+    oppon = to.split(":")
+    
+    character = to.split(":")
+    mine = ['R','N','B','Q','P']
+    lst = [(-1,1),(0,1),(1,1),(-1,0),(1,0),(-1,-1),(0,-1),(1,-1)]
+ 
+    try:
+        if not tuple(sorted((abs(dx),abs(dy)))) in [(1,1), (0, 1)]:
+            raise ValueError("you are king be wise remeber that")
+        if character[1] in mine:
+            raise ValueError("Oops you can't eat your peaces")
+        nx= from_row + dx
+        ny = from_col + dy
+        for i in lst:
+            x, y = i
+            d_x = nx + x
+            d_y = ny + y
+            if d_x >= 8 or d_y >= 8 or d_x < 0 or d_y < 0:
+                continue
+            char = grid[d_y][d_x].value
+            char = char.split(":")
+            if char[1] == "k":
+                raise ValueError("Oops you can't be near like that with the king your not the queen")       
+        if character[1] in mine:
+            raise ValueError("Oops you can't eat your peaces")
+        if oppon[1] in opponent:
+            grid[from_col][from_row].value = charac[0]+":"+"#"
+            boerd[from_col][from_row] = grid[from_col][from_row].value
+    
+    except ValueError as e:
+        print("Error:",e)
         return False
-#check the bishop
-def check_bishop(from_p , to, boerd, grid):
+    return True
+
+
+
+
+def rule_knight(from_n, to, boerd, grid):
+    from_row, from_col = ft_position(from_n,boerd)
+    to_row, to_col = ft_position(to,boerd)
+    dx = from_row - to_row
+    dy = from_col - to_col
+    character = to.split(":")
+    mine = ['R','N','B','Q','K','P']
+    try:
+        if sorted([abs(dx),abs(dy)]) != [1, 2]:
+            raise ValueError("you are knight remeber that")
+        if character[1] in mine:
+            raise ValueError("Oops you can't eat your peaces")
+    
+    except ValueError as e:
+        print("Error:",e)
+        return False
+    return True
+
+
+
+def rule_check_bishop(from_p , to, boerd, grid):
     character = from_p.split(":")
     oppon = to.split(":")
     friendly = ['B','#']
     opponent = ['p','r','b','q','n']
-    mine = ['R','N','B','Q','K']
+    mine = ['R','N','B','Q','K','P']
     from_row, from_col = ft_position(from_p,boerd)
     to_row, to_col = ft_position(to,boerd)
     f_r = from_row
     f_c = from_col
-    go_to = abs(from_row - to_row)
-    
+
     try:
         if abs(from_row - to_row) != abs(from_col - to_col):
             raise ValueError("please move the bishop so form like x")
-        right_left = from_col - to_col
-        up_down = from_row - to_row
-        if right_left < 0 and up_down < 0:
-            direction = "right_down"
-        elif right_left > 0 and up_down < 0:
-            direction = "left_down"
-        elif right_left < 0 and up_down > 0:
-            direction = "right_up"
-        elif right_left > 0 and up_down > 0:
-            direction = "left_up"
-        if right_left == 0 and up_down == 0:
+        dy = (to_col > from_col) - (to_col < from_col)
+        dx = (to_row > from_row) - (to_row < from_row)
+        if dx == 0 or dy == 0:
             return False
         while True:
-            if direction == "left_up":
-                from_row -= 1
-                from_col -= 1
-            elif direction == "right_up":
-                from_row -= 1
-                from_col += 1
-            elif direction == "left_down":
-                from_row += 1
-                from_col += 1
-            elif direction == "right_down":
-                from_row += 1
-                from_col -= 1
+            from_row +=dx
+            from_col +=dy
             value = boerd[from_row][from_col].split(":")
-            if value[1] not in friendly and not from_col == to_col:
-                raise ValueError("you can't jump hhhh u are not Knight")
-            if (from_col == to_col or from_row == to_row) and value[1] in mine:
-                raise ValueError("you can't jump hhhh u are not Knight")
-                break
             if from_col == to_col or from_row == to_row:
                 break
-            
+            if value[1] in mine:
+                raise ValueError("friends")
+                break
         if oppon[1] in opponent:
             grid[f_r][f_c].value = character[0]+":"+"#"
             boerd[f_r][f_c] = grid[f_r][f_c].value
     except ValueError as e:
-        print("Error", e)
+        print("Error", e)  
         return False
     return True
     
 
-def rule_rock(fro_m, to, boerd, grid):
-    from_row, from_col = ft_position(from_p,boerd)
+def rule_rock(from_r, to, boerd, grid):
+    check = ['R','N','B','Q','K','p','r','b','q','n']
+    oppon = to.split(":")
+    character = from_r.split(":")
+    
+    from_row, from_col = ft_position(from_r,boerd)
     to_row, to_col = ft_position(to,boerd)
+    
+    f_r = from_row
+    f_c = from_col
     try:
-        if from_col != to_col:
+        if abs(from_row - to_row) == abs(from_col - to_col):
             raise ValueError("you can't move diagonal")
-        # if to
-        
-
-
-
-
+        row_move = from_row - to_row
+        col_move = from_col - to_col 
+        dx = (from_row >= to_row) - (from_row <= to_row)
+        dy = (from_col >= to_col) - (from_col <= to_col)
+        while True:
+            from_row +=dx
+            from_col +=dy
+            if from_col == to_col or from_row == to_row:
+                break
+            value = boerd[from_row][from_col].split(":")
+            if value[1] in check:
+                raise ValueError("R you can't jump hhhh u are not Knight")
+                break
+          
+        if oppon[1] in opponent:
+            grid[f_r][f_c].value = character[0]+":"+"#"
+            boerd[f_r][f_c] = grid[f_r][f_c].value
     except ValueError as e:
         print("Error",e)
         return False
     return True
 
 
+def rule_queen(from_q, to, boerd, grid):
+    return rule_check_bishop(from_q, to, boerd, grid) or from_q, to, boerd, grid
+
 def check_and_move(first, second,peace, boerd,grid,turn):
     fro_m = first
     to = second
-    if peace == "P":
-        check_move = rule_move_pawn_white(fro_m, to, boerd, grid)
-    elif peace == "B" or peace == "b":
-        check_move = check_bishop(fro_m , to, boerd, grid)
-    elif peace == "R":
-        check_move = rule_rock(fro_m, to, boerd, grid)
- 
-
+    rule = {
+        "P": rule_move_pawn_white,
+        "B": rule_check_bishop,
+        "R":rule_rock,
+        "Q":rule_queen,
+        "N":rule_knight,
+        "K":rule_king,
+        "E":rule_checks
+    }
+    check_move = rule.get(peace,lambda *args : False)(fro_m , to, boerd, grid)
     if turn == "white":
         if check_move:
             boerd = move_generale(first, second,fro_m, to, boerd)
@@ -244,8 +299,8 @@ def check_and_move(first, second,peace, boerd,grid,turn):
             check_move = rule_move_pawn_black(fro_m, to, boerd, grid)
         elif peace == "B" or peace == "b":
             check_move = check_bishop(fro_m , to, boerd, grid)
-        eif peace == "r":
-        check_move = rule_rock(fro_m, to, boerd, grid)
+        elif peace == "r":
+            check_move = rule_rock(fro_m, to, boerd, grid)
 
         if check_move:
             boerd = move_generale(first, second,fro_m, to, boerd)
@@ -299,3 +354,4 @@ def move_generale_from_to():
                 continue
 
 move_generale_from_to()
+
